@@ -36,8 +36,8 @@ efi_status_t efi_smbios_register(void)
 
 	addr = gd_smbios_start();
 	if (!addr) {
-		log_err("No SMBIOS tables to install\n");
-		return EFI_NOT_FOUND;
+		log_warning("No SMBIOS tables to install\n");
+		return EFI_SUCCESS;
 	}
 
 	/* Mark space used for tables */

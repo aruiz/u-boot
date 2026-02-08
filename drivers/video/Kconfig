@@ -370,7 +370,7 @@ config VIDEO_VESA
 
 config FRAMEBUFFER_SET_VESA_MODE
 	bool "Set framebuffer graphics resolution"
-	depends on VIDEO_VESA || VIDEO_BROADWELL_IGD
+	depends on VIDEO_VESA || VIDEO_BROADWELL_IGD || BIOS_PC
 	help
 	  Set VESA/native framebuffer mode (needed for bootsplash and graphical
 	  framebuffer console)

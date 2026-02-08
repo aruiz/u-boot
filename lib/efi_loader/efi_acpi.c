@@ -48,6 +48,12 @@ efi_status_t efi_acpi_register(void)
 		if (ret != EFI_SUCCESS)
 			return ret;
 	} else {
+		addr = gd_acpi_start();
+		if (!addr) {
+			log_warning("No ACPI RSDP to install\n");
+			return EFI_SUCCESS;
+		}
+
 		/* Mark space used for tables */
 		start = ALIGN_DOWN(gd->arch.table_start, EFI_PAGE_MASK);
 		end = ALIGN(gd->arch.table_end, EFI_PAGE_MASK);
@@ -64,8 +70,6 @@ efi_status_t efi_acpi_register(void)
 			if (ret != EFI_SUCCESS)
 				return ret;
 		}
-
-		addr = gd_acpi_start();
 	}
 	log_debug("EFI using ACPI tables at %lx\n", addr);
 

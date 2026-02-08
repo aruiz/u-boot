@@ -91,10 +91,12 @@ Once U-Boot is running, it does the following (all implemented for this target):
   keyboard node (``intel,i8042-keyboard``), so the i8042 driver probes and
   registers the keyboard for the console. You can type at the prompt.
 
-- **Display**: The config uses ``VIDEO_VESA`` (VESA BIOS Extension) only. U-Boot
-  uses the BIOS VBE interface to set a framebuffer mode and then prints to it.
-  This works on both real BIOS PCs and in QEMU (with SeaBIOS). Serial console
-  is also available.
+- **Display**: The ``vesa_bios`` driver calls the BIOS VBE interface via real-mode
+  INT 10h to set a 1024x768x16bpp VESA framebuffer (mode 0x117). The vidconsole
+  renders text on the framebuffer, and EFI GOP exposes it to UEFI payloads. This
+  works on real BIOS PCs and in QEMU with SeaBIOS (use ``-display gtk``). When no
+  video BIOS is available (``-kernel`` without SeaBIOS), the driver silently fails
+  and serial console remains the only output.
 
 The console is set up from the device tree (``stdout-path`` and the chosen
 serial/video devices) and ``stdio_add_devices()`` / ``console_init_r()``, so
