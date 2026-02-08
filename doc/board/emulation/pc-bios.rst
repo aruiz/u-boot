@@ -14,10 +14,11 @@ Boot flow
 1. **BIOS** loads the MBR from the boot disk (e.g. first sector).
 2. **MBR** (or a small stage0) loads the U-Boot binary from a FAT partition
    into RAM at a fixed address and jumps to it.
-3. **U-Boot** runs in 32-bit protected mode: shows the prompt, accesses disk
-   via IDE/AHCI using U-Boot's partition (MBR/GPT) and FAT drivers.
-4. Optionally, **U-Boot** can load and run UEFI applications (e.g. GRUB, or a
-   UEFI kernel) so the BIOS PC appears as a UEFI machine.
+3. **U-Boot** runs in 32-bit protected mode: scans all storage controllers
+   (IDE, SATA, NVMe, USB) and searches every ESP for an EFI boot image.
+4. **U-Boot** loads and runs the first ``/EFI/BOOT/BOOTIA32.EFI`` it finds,
+   making the BIOS PC behave as a UEFI machine. If no EFI image is found,
+   U-Boot drops to the interactive prompt.
 
 MBR → U-Boot contract
 ---------------------
@@ -39,32 +40,29 @@ correctly:
 U-Boot will relocate itself later; the load address above is where the image
 must be placed by the MBR.
 
-How U-Boot finds the disk
--------------------------
+How U-Boot boots (generic EFI)
+------------------------------
 
-U-Boot does **not** receive the boot disk or partition from the MBR today. It
-uses **build-time and environment defaults**:
+U-Boot uses the **bootstd** framework (``CONFIG_BOOTSTD_FULL``) to automatically
+scan all storage controllers and find a bootable EFI image. No disk interface
+is hardcoded; the boot flow is fully generic:
 
-- **Compiled-in defaults**: ``CONFIG_ENV_FAT_INTERFACE`` (e.g. ``ide`` or
-  ``sata``) and ``CONFIG_ENV_FAT_DEVICE_AND_PART`` (e.g. ``0:1``) in the
-  defconfig tell U-Boot which block interface and which device/partition to use
-  for the FAT env and for commands like ``load``. So you configure the same disk
-  (and partition) from which the MBR loads U-Boot—typically first disk, first
-  partition.
-- **Runtime**: If a valid env has been saved on that FAT partition, the saved
-  ``env_fat_interface`` and ``env_fat_device_and_part`` override the compiled-in
-  values. The user can also set them at the prompt.
+1. Early PCI scan discovers all IDE, AHCI/SATA, SCSI, and NVMe controllers.
+2. ``arch_early_init_r()`` probes all storage controllers so block devices
+   are available immediately.
+3. The default ``bootcmd`` (``bootflow scan``) iterates over all discovered
+   block devices by priority.
+4. For each partition, the **EFI bootmeth** checks for
+   ``/EFI/BOOT/BOOTIA32.EFI`` (the standard EFI boot binary for IA-32).
+5. The first valid EFI bootflow found is booted.
 
-So the MBR and U-Boot agree by **convention**: you put U-Boot's binary on a FAT
-partition (e.g. first partition on the first disk), build U-Boot with that same
-disk/partition as the default (e.g. ``ide`` / ``0:1`` or ``sata`` / ``0:1``), and
-the MBR loads from that partition. No boot-drive information is passed from MBR
-to U-Boot in the current design.
+This means U-Boot will find and boot an EFI application from the first EFI
+System Partition (ESP) it encounters, regardless of whether the disk is on
+IDE, SATA, NVMe, or USB.
 
-To make U-Boot truly "know" the boot disk, the MBR could pass the BIOS drive
-number in **DL** (and optionally partition number elsewhere); U-Boot would need
-code to read that and set the default interface and device/partition accordingly
-(board-specific, not yet implemented).
+The environment is not stored on disk (``CONFIG_ENV_IS_NOWHERE``); U-Boot
+always starts with compiled-in defaults. This avoids any dependency on a
+specific disk interface being present.
 
 Build
 -----
@@ -83,11 +81,10 @@ How U-Boot enumerates disks, keyboard, and display
 
 Once U-Boot is running, it does the following (all implemented for this target):
 
-- **Disks**: Early in the post-relocation init (``board_r.c``), ``pci_init()``
-  runs (``CONFIG_PCI_INIT_R``). That scans the PCI bus; the IDE (PIIX) and
-  AHCI drivers bind to the disk controllers and register block devices. U-Boot's
-  MBR/GPT and FAT code then operate on those block devices. So disk enumeration
-  is via normal PCI scan; no extra step is required.
+- **Disks**: Early PCI scan (``SYS_EARLY_PCI_INIT``) enumerates the PCI bus
+  and binds IDE, AHCI, and NVMe drivers. Then ``arch_early_init_r()`` probes
+  all storage controllers so their block devices are available before the
+  environment or EFI subsystems need them.
 
 - **Keyboard**: The x86 build implies ``DM_KEYBOARD`` and defaults
   ``I8042_KEYB`` (Intel 8042 PS/2 controller). The device tree includes a
@@ -108,11 +105,12 @@ Features used
 
 - **Partition tables**: U-Boot's MBR and GPT parsers (``part_dos``, ``part_gpt``)
   are used to read the disk layout.
-- **FAT**: U-Boot's FAT driver is used for the environment (e.g. ``env.fat``)
-  and for loading files (kernels, UEFI apps).
-- **UEFI**: With ``CONFIG_EFI_LOADER`` and ``CONFIG_CMD_BOOTEFI``, you can run
-  ``bootefi`` to load and execute UEFI applications (e.g. GRUB, or a UEFI
-  kernel), making the BIOS PC behave as a UEFI machine from the OS point of view.
+- **FAT**: U-Boot's FAT driver is used for loading files (kernels, UEFI apps)
+  from any discovered disk.
+- **UEFI**: With ``CONFIG_EFI_LOADER`` and ``CONFIG_BOOTSTD_FULL``, the bootflow
+  scanner automatically finds ``/EFI/BOOT/BOOTIA32.EFI`` on any ESP across all
+  storage controllers (IDE, SATA, NVMe, USB). The BIOS PC behaves as a UEFI
+  machine from the OS point of view.
 
 Testing
 -------
@@ -124,7 +122,7 @@ To quickly check that the binary runs without creating a disk image::
 
    $ make pc_bios_defconfig
    $ make
-   $ qemu-system-i386 -nographic -kernel u-boot -m 128 -serial stdio
+   $ qemu-system-i386 -nographic -kernel u-boot-dtb.bin -m 128
 
 The default TEXT_BASE (0x100000 = 1 MiB) matches QEMU's ``-kernel`` load
 address, so no config changes are needed. You should see U-Boot start and get
@@ -168,12 +166,10 @@ env defaults apply.
 Environment
 -----------
 
-Typical env for disk and FAT (adjust interface to match your disk)::
+The environment is stored in RAM only (``CONFIG_ENV_IS_NOWHERE``). U-Boot
+always starts with compiled-in defaults. This keeps the board generic—no
+dependency on a specific disk interface being present at boot.
 
-   env_fat_interface=ide
-   env_fat_device_and_part=0:1
-
-For SATA::
-
-   env_fat_interface=sata
-   env_fat_device_and_part=0:1
+To persistently save environment variables, you can switch to
+``CONFIG_ENV_IS_IN_FAT`` and set ``CONFIG_ENV_FAT_INTERFACE`` /
+``CONFIG_ENV_FAT_DEVICE_AND_PART`` to match your disk setup.

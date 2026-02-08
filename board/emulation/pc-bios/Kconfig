@@ -27,6 +27,8 @@ config BOARD_SPECIFIC_OPTIONS
 	select AHCI_PCI
 	imply SCSI
 	imply SCSI_AHCI
+	imply NVME_PCI
+	imply CMD_NVME
 	imply USB
 	imply USB_EHCI_HCD
 	imply USB_STORAGE

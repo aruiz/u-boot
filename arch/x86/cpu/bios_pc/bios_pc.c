@@ -34,13 +34,16 @@ int arch_early_init_r(void)
 	struct udevice *dev;
 
 	/*
-	 * Probe IDE/AHCI controllers now so their block devices exist
-	 * before initr_env() tries to load the environment from FAT.
+	 * Probe all storage controllers now so their block devices exist
+	 * before initr_env() tries to load the environment from FAT and
+	 * before efi_init_early() needs disk access.
+	 *
 	 * PCI scan (SYS_EARLY_PCI_INIT) has already bound these devices;
 	 * we just need to trigger the probe to create the block children.
 	 */
 	uclass_first_device(UCLASS_IDE, &dev);
 	uclass_first_device(UCLASS_AHCI, &dev);
+	uclass_first_device(UCLASS_NVME, &dev);
 
 	return 0;
 }
