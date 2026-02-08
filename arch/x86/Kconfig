@@ -122,6 +122,7 @@ source "arch/x86/cpu/broadwell/Kconfig"
 source "arch/x86/cpu/coreboot/Kconfig"
 source "arch/x86/cpu/ivybridge/Kconfig"
 source "arch/x86/cpu/efi/Kconfig"
+source "arch/x86/cpu/bios_pc/Kconfig"
 source "arch/x86/cpu/qemu/Kconfig"
 source "arch/x86/cpu/quark/Kconfig"
 source "arch/x86/cpu/queensbay/Kconfig"
@@ -378,6 +379,7 @@ config HAVE_FSP
 
 config USE_CAR
 	bool "Use Cache-As-RAM (CAR) to get temporary RAM at start-up"
+	default n if BIOS_PC
 	default y if !HAVE_FSP
 	help
 	  Select this option if your board uses CAR init code, typically in a

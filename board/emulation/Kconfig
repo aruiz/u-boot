@@ -23,8 +23,17 @@ config TARGET_QEMU_X86_64
 	  U-Boot is built as a 64-bit binary. This allows testing while
 	  this feature is being completed.
 
+config TARGET_PC_BIOS
+	bool "PC (BIOS)"
+	help
+	  Generic PC target when U-Boot is loaded by legacy BIOS (or
+	  SeaBIOS in QEMU) in 32-bit mode. Assumes BIOS has already
+	  done POST and memory setup. Provides basic text (serial),
+	  serial I/O, and disk I/O with interrupt support (8259 PIC).
+
 endchoice
 
 source "board/emulation/qemu-x86/Kconfig"
+source "board/emulation/pc-bios/Kconfig"
 
 endif

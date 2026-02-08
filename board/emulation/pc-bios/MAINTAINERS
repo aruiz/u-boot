@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# PC (BIOS) board
+#
+
+PC-BIOS BOARD
+M:	Maintainer <maintainer@example.com>
+S:	Orphan
+F:	board/emulation/pc-bios/
+F:	arch/x86/cpu/bios_pc/
+F:	configs/pc_bios_defconfig

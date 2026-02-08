@@ -354,6 +354,10 @@ static int dm_scan(bool pre_reloc_only)
 	}
 
 	if (CONFIG_IS_ENABLED(OF_REAL)) {
+		if (!gd->fdt_blob) {
+			dm_warn("Cannot scan FDT: gd->fdt_blob is NULL\n");
+			return -EINVAL;
+		}
 		ret = dm_extended_scan(pre_reloc_only);
 		if (ret) {
 			dm_warn("dm_extended_scan() failed: %d\n", ret);

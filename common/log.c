@@ -470,8 +470,10 @@ int log_init(void)
 
 		ldev = calloc(1, sizeof(*ldev));
 		if (!ldev) {
-			debug("%s: Cannot allocate memory\n", __func__);
-			return -ENOMEM;
+			debug("%s: Cannot allocate memory for log driver '%s'\n",
+			      __func__, drv->name);
+			drv++;
+			continue;
 		}
 		INIT_LIST_HEAD(&ldev->filter_head);
 		ldev->drv = drv;

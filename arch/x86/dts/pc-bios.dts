@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * PC (BIOS) target - U-Boot loaded by legacy BIOS in 32-bit mode
+ */
+
+/dts-v1/;
+
+#include "skeleton.dtsi"
+#include "serial.dtsi"
+#include "keyboard.dtsi"
+#include "reset.dtsi"
+#include "rtc.dtsi"
+#include "tsc_timer.dtsi"
+#include "smbios.dtsi"
+
+/ {
+	model = "PC (BIOS)";
+	compatible = "pc,bios";
+
+	config {
+		silent_console = <0>;
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		bootph-all;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			bootph-all;
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		bootph-all;
+		ranges = <0x02000000 0x0 0xc0000000 0xc0000000 0 0x10000000
+			0x42000000 0x0 0xd0000000 0xd0000000 0 0x10000000
+			0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+	};
+};

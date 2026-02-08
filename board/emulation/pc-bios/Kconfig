@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# PC (BIOS) target - U-Boot loaded by legacy BIOS in 32-bit mode
+#
+
+if TARGET_PC_BIOS
+
+config SYS_BOARD
+	default "pc-bios"
+
+config SYS_VENDOR
+	default "emulation"
+
+config SYS_SOC
+	default "bios_pc"
+
+config TEXT_BASE
+	default 0x100000
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select X86_LOAD_FROM_32_BIT
+	select BIOS_PC
+	select I8259_PIC
+	select SYS_NS16550
+	select SYS_EARLY_PCI_INIT
+	select AHCI_PCI
+	imply SCSI
+	imply SCSI_AHCI
+	imply USB
+	imply USB_EHCI_HCD
+	imply USB_STORAGE
+	imply CMD_IDE
+
+endif

@@ -47,6 +47,7 @@ obj-$(CONFIG_INTEL_BRASWELL) += braswell/
 obj-$(CONFIG_INTEL_BROADWELL) += broadwell/
 obj-$(CONFIG_SYS_COREBOOT) += coreboot/
 obj-$(CONFIG_SYS_SLIMBOOTLOADER) += slimbootloader/
+obj-$(CONFIG_BIOS_PC) += bios_pc/
 obj-$(CONFIG_EFI_CLIENT) += efi/
 obj-$(CONFIG_QEMU) += qemu/
 obj-$(CONFIG_NORTHBRIDGE_INTEL_IVYBRIDGE) += ivybridge/
@@ -58,6 +59,7 @@ obj-$(CONFIG_$(PHASE_)ACPI_GPE) += acpi_gpe.o
 obj-$(CONFIG_QFW) += qfw_cpu.o
 ifndef CONFIG_SYS_COREBOOT
 obj-$(CONFIG_$(PHASE_)X86_32BIT_INIT) += irq.o
+obj-$(CONFIG_BIOS_PC) += irq.o
 endif
 ifndef CONFIG_$(PHASE_)X86_64
 obj-$(CONFIG_$(PHASE_)SMP) += mp_init.o

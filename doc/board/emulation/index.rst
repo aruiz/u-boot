@@ -15,6 +15,7 @@ Emulation
    qemu-ppce500
    qemu-riscv
    qemu-sbsa
+   pc-bios
    qemu-x86
    qemu-xtensa
    qemu-m68k

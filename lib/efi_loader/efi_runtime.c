@@ -46,20 +46,25 @@ static efi_status_t __efi_runtime EFIAPI efi_unimplemented(void);
  */
 #if defined(__aarch64__)
 #define R_RELATIVE	R_AARCH64_RELATIVE
+#define R_NONE		R_AARCH64_NONE
 #define R_MASK		0xffffffffULL
 #define IS_RELA		1
 #elif defined(__arm__)
 #define R_RELATIVE	R_ARM_RELATIVE
+#define R_NONE		R_ARM_NONE
 #define R_MASK		0xffULL
 #elif defined(__i386__)
 #define R_RELATIVE	R_386_RELATIVE
+#define R_NONE		R_386_NONE
 #define R_MASK		0xffULL
 #elif defined(__x86_64__)
 #define R_RELATIVE	R_X86_64_RELATIVE
+#define R_NONE		R_X86_64_NONE
 #define R_MASK		0xffffffffULL
 #define IS_RELA		1
 #elif defined(__riscv)
 #define R_RELATIVE	R_RISCV_RELATIVE
+#define R_NONE		0	/* R_RISCV_NONE not in elf.h; ELF uses 0 for none */
 #define R_MASK		0xffULL
 #define IS_RELA		1
 
@@ -742,6 +747,14 @@ void efi_runtime_relocate(ulong offset, struct efi_mem_desc *map)
 		      rel->info, *p, rel->offset);
 
 		switch (rel->info & R_MASK) {
+		case R_NONE:
+			/*
+			 * R_386_NONE / R_X86_64_NONE: no relocation. The linker
+			 * may emit these for alignment or for entries that need
+			 * no fixup. Skip without modifying the target or
+			 * reporting an error.
+			 */
+			continue;
 		case R_RELATIVE:
 #ifdef IS_RELA
 		newaddr = rel->addend + offset - CONFIG_TEXT_BASE;
