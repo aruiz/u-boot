@@ -7,10 +7,10 @@ config BIOS_PC
 	bool
 	select ARCH_EARLY_INIT_R
 	imply SYS_NS16550
-	imply AHCI_PCI
 	imply I8254_TIMER
 	help
 	  Select this when building for a generic PC where U-Boot is loaded
 	  by legacy BIOS (or SeaBIOS in QEMU) in 32-bit protected mode.
 	  Assumes BIOS has already done POST and memory setup. RAM size
-	  is read from standard CMOS locations.
+	  is read from standard CMOS locations. No PCI or storage buses
+	  are probed; use BIOS interfaces (e.g. INT 13h) for disk I/O.

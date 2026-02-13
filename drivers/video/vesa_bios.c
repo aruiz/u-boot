@@ -13,7 +13,6 @@
 
 #include <dm.h>
 #include <log.h>
-#include <pci.h>
 #include <string.h>
 #include <vesa.h>
 #include <video.h>

@@ -15,7 +15,7 @@ config SYS_SOC
 	default "bios_pc"
 
 config TEXT_BASE
-	default 0x100000
+	default 0x100200
 
 config BOARD_SPECIFIC_OPTIONS
 	def_bool y
@@ -23,15 +23,8 @@ config BOARD_SPECIFIC_OPTIONS
 	select BIOS_PC
 	select I8259_PIC
 	select SYS_NS16550
-	select SYS_EARLY_PCI_INIT
-	select AHCI_PCI
-	imply SCSI
-	imply SCSI_AHCI
-	imply NVME_PCI
-	imply CMD_NVME
-	imply USB
-	imply USB_EHCI_HCD
-	imply USB_STORAGE
-	imply CMD_IDE
+	help
+	  No PCI or storage bus probing; serial and video use BIOS/legacy
+	  interfaces only (NS16550 serial, VESA via INT 10h).
 
 endif
