@@ -22,6 +22,7 @@ static struct {
 	enum uclass_id id;
 	const char *name;
 } uclass_idname_str[] = {
+	{ UCLASS_BIOS_DISK, "bios_disk" },
 	{ UCLASS_IDE, "ide" },
 	{ UCLASS_SCSI, "scsi" },
 	{ UCLASS_USB, "usb" },

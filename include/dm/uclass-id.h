@@ -42,6 +42,7 @@ enum uclass_id {
 	UCLASS_AHCI,		/* SATA disk controller */
 	UCLASS_AUDIO_CODEC,	/* Audio codec with control and data path */
 	UCLASS_AXI,		/* AXI bus */
+	UCLASS_BIOS_DISK,	/* BIOS INT 13h disk controller */
 	UCLASS_BLK,		/* Block device */
 	UCLASS_BLKMAP,		/* Composable virtual block device */
 	UCLASS_BOOTCOUNT,       /* Bootcount backing store */

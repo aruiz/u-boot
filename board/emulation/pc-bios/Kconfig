@@ -21,10 +21,11 @@ config BOARD_SPECIFIC_OPTIONS
 	def_bool y
 	select X86_LOAD_FROM_32_BIT
 	select BIOS_PC
+	select BIOS_DISK
 	select I8259_PIC
 	select SYS_NS16550
 	help
 	  No PCI or storage bus probing; serial and video use BIOS/legacy
-	  interfaces only (NS16550 serial, VESA via INT 10h).
+	  interfaces only (NS16550 serial, VESA via INT 10h, INT 13h disks).
 
 endif

@@ -42,4 +42,8 @@
 	vga {
 		compatible = "vesa-bios";
 	};
+
+	bios-disks {
+		compatible = "bios-disks";
+	};
 };

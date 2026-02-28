@@ -162,6 +162,11 @@ __registers = PTR_TO_REAL_MODE(.)
 asm_realmode_buffer:
 	.skip 256
 
+/* 512 byte buffer for INT 13h disk I/O (one sector) */
+	.globl asm_realmode_disk_buffer
+asm_realmode_disk_buffer:
+	.skip 512
+
 	.code32
 	.globl asm_realmode_call
 asm_realmode_call:

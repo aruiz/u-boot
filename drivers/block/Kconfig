@@ -135,6 +135,21 @@ config EFI_MEDIA_BLK
 
 endif  # EFI_MEDIA
 
+config BIOS_DISK
+	bool "BIOS INT 13h disk driver"
+	depends on BIOS_PC
+	select BLK
+	help
+	  Enable a block driver that uses real-mode BIOS INT 13h calls to
+	  access hard disks.  At probe time it enumerates drives 0x80-0x87
+	  via INT 13h AH=48h (get extended drive parameters) and creates a
+	  block device for each one found.  Reads use INT 13h AH=42h
+	  (extended read).
+
+	  This is intended for the pc-bios board where U-Boot is loaded by
+	  a legacy BIOS (or SeaBIOS in QEMU) and no PCI/AHCI storage
+	  controller is probed.
+
 config IDE
 	bool "Support IDE controllers"
 	depends on !COMPILE_TEST

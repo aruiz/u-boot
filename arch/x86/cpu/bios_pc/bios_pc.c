@@ -9,6 +9,8 @@
  */
 
 #include <cpu_func.h>
+#include <dm.h>
+#include <dm/uclass.h>
 #include <init.h>
 #include <log.h>
 #include <acpi/acpi_table.h>
@@ -113,6 +115,17 @@ int arch_early_init_r(void)
 	if (addr) {
 		log_info("BIOS SMBIOS found at %lx\n", addr);
 		gd_set_smbios_start(addr);
+	}
+
+	/*
+	 * Probe the BIOS disk controller so that INT 13h drives are
+	 * enumerated early.  This creates block devices (and partitions)
+	 * that the standard-boot framework and filesystem commands can use.
+	 */
+	if (IS_ENABLED(CONFIG_BIOS_DISK)) {
+		struct udevice *dev;
+
+		uclass_first_device(UCLASS_BIOS_DISK, &dev);
 	}
 
 	return 0;

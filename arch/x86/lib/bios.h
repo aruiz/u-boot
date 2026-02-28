@@ -31,6 +31,7 @@
  */
 extern unsigned char asm_realmode_call, __realmode_interrupt;
 extern unsigned char asm_realmode_buffer;
+extern unsigned char asm_realmode_disk_buffer;
 
 #define DOWNTO8(A) \
 	union { \
