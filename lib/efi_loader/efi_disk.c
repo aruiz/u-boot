@@ -867,12 +867,37 @@ efi_status_t efi_disk_get_device_name(const efi_handle_t handle, char *buf, int 
  * The function probes all block devices. As we store UEFI variables on the
  * EFI system partition this function has to be called before enabling
  * variable services.
+ *
+ * Block devices that were probed before the EFI event handler was registered
+ * (e.g. BIOS disk devices probed during arch_early_init_r) will have missed
+ * the EVT_DM_POST_PROBE event and thus lack EFI handles.  After the normal
+ * probe loop we sweep for such devices and create their handles explicitly.
  */
 efi_status_t efi_disks_register(void)
 {
 	struct udevice *dev;
 
 	uclass_foreach_dev_probe(UCLASS_BLK, dev) {
+	}
+
+	uclass_foreach_dev_probe(UCLASS_BLK, dev) {
+		struct blk_desc *desc;
+		efi_handle_t handle;
+		struct udevice *child;
+
+		/* Skip devices that already have an EFI handle */
+		if (!dev_tag_get_ptr(dev, DM_TAG_EFI, (void **)&handle))
+			continue;
+
+		desc = dev_get_uclass_plat(dev);
+		if (desc->uclass_id == UCLASS_EFI_LOADER)
+			continue;
+
+		efi_disk_create_raw(dev, NULL);
+
+		device_foreach_child(child, dev) {
+			efi_disk_create_part(child, NULL);
+		}
 	}
 
 	return EFI_SUCCESS;
